@@ -1,34 +1,92 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# NextJS with Prisma
 
-## Getting Started
+This sample project shows how to use NextJS with Prisma.
 
-First, run the development server:
+Prisma is an open-source ORM and database toolkit that makes working with
+databases a breeze. You can learn more at [prisma.io](http://prisma.io).
+
+## How to Run the Project
+
+Clone the repo and install dependencies.
 
 ```bash
+# with npm
+npm i
+
+# with yarn
+yarn
+```
+
+After all dependencies have been installed, run the app.
+
+```bash
+# with npm
 npm run dev
-# or
+
+# with yarn
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The app will be served at `localhost:3000`.
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+This sample project demonstrates how to access data with Prisma in two distinct
+ways: in the `getServerSideProps` function and from an API route.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+## Access from `getServerSideProps`
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+The `getServerSideProps` function is used to prepare a NextJS page before it
+renders. It's useful for getting some initial data to be rendered.
 
-## Learn More
+This function runs on the server which means Prisma can be used here to query
+for data.
 
-To learn more about Next.js, take a look at the following resources:
+The project demonstrates how to make an initial query for data with Prisma in
+this function.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```ts
+// pages/index.ts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+export async function getServerSideProps() {
+  const contacts = await prisma.contact.findMany();
+  return {
+    props: {
+      initialContacts: contacts
+    }
+  };
+}
+```
 
-## Deploy on Vercel
+## Access from an API Route
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Next API routes use serverless functions to execute code in a backend
+environment. This is another place where Prisma can be used to access data.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+This project demonstrates how to save data with Prisma from an API route.
+
+```ts
+// pages/api/contacts.ts
+
+import type { NextApiRequest, NextApiResponse } from 'next';
+
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+export default async (req: NextApiRequest, res: NextApiResponse) => {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    const contact = JSON.parse(req.body);
+    const savedContact = await prisma.contact.create({ data: contact });
+    res.status(200).json(savedContact);
+  } catch (err) {
+    res.status(400).json({ message: 'Something went wrong' });
+  }
+};
+```
+
+## License
+
+MIT
