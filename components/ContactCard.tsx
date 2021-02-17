@@ -1,12 +1,8 @@
+import { Contact } from '@prisma/client';
 import Image from 'next/image';
 
 interface ContactCardProps {
-  contact: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    avatar: string;
-  };
+  contact: Contact;
 }
 
 export default function ContactCard(props: ContactCardProps) {

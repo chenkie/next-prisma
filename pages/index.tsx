@@ -3,12 +3,12 @@ import Head from 'next/head';
 import AddContactForm from './../components/AddContactForm';
 import ContactCard from './../components/ContactCard';
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Contact, Prisma } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
 export async function getServerSideProps() {
-  const contacts = await prisma.contact.findMany();
+  const contacts: Contact[] = await prisma.contact.findMany();
   return {
     props: {
       initialContacts: contacts
@@ -16,7 +16,7 @@ export async function getServerSideProps() {
   };
 }
 
-async function saveContact(contact) {
+async function saveContact(contact: Prisma.ContactCreateInput) {
   const response = await fetch('/api/contacts', {
     method: 'POST',
     body: JSON.stringify(contact)
@@ -29,7 +29,7 @@ async function saveContact(contact) {
 }
 
 export default function Index({ initialContacts }) {
-  const [contacts, setContacts] = useState(initialContacts);
+  const [contacts, setContacts] = useState<Contact[]>(initialContacts);
   return (
     <>
       <Head>
@@ -61,7 +61,7 @@ export default function Index({ initialContacts }) {
           <div className="mb-3">
             <h2 className="text-3xl text-gray-700">Contacts</h2>
           </div>
-          {contacts.map((c: any, i: number) => (
+          {contacts.map((c, i: number) => (
             <div className="mb-3" key={i}>
               <ContactCard contact={c} />
             </div>
